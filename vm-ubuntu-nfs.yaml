@@ -1,0 +1,51 @@
+apiVersion: kubevirt.io/v1alpha3
+kind: VirtualMachine
+metadata:
+  creationTimestamp:
+  generation: 1
+  labels:
+    kubevirt.io/os: linux
+  name: vm-ubuntu-nfs
+spec:
+  running: true
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        kubevirt.io/domain: vm-ubuntu-nfs
+    spec:
+      evictionStrategy: LiveMigrate
+      domain:
+        cpu:
+          cores: 2
+        devices:
+          disks:
+          - disk:
+              bus: virtio
+            name: disk0
+          #- cdrom:
+          #    bus: sata
+          #    readonly: true
+          #  name: cloudinitdisk
+          interfaces:
+          - name: default
+            masquerade: {}
+        machine:
+          type: q35
+        resources:
+          requests:
+            memory: 1024M
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - name: disk0
+        persistentVolumeClaim:
+          claimName: vm-test-nfs
+      - cloudInitNoCloud:
+          userData: |
+            #cloud-config
+            hostname: vm-ubuntu-nfs
+            password: ubuntu
+            chpasswd: { expire: False }
+        name: cloudinitdisk
